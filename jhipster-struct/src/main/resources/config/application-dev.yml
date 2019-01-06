@@ -24,7 +24,6 @@ spring:
         active: dev
         include:
             - no-liquibase
-            
             # Uncomment to activate TLS for the dev profile
             #- tls
     devtools:

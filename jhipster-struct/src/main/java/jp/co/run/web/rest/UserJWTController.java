@@ -50,6 +50,12 @@ public class UserJWTController {
         return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
     }
 
+    @PostMapping("/test")
+    @Timed
+    public ResponseEntity<?> test() {
+        return new ResponseEntity<> (HttpStatus.OK);
+    }
+    
     /**
      * Object to return as body in JWT Authentication.
      */
