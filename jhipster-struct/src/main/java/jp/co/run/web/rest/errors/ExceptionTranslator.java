@@ -11,13 +11,13 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.NativeWebRequest;
-import org.springframework.web.servlet.NoHandlerFoundException;
 import org.zalando.problem.DefaultProblem;
 import org.zalando.problem.Problem;
 import org.zalando.problem.ProblemBuilder;
@@ -25,6 +25,8 @@ import org.zalando.problem.Status;
 import org.zalando.problem.spring.web.advice.ProblemHandling;
 import org.zalando.problem.violations.ConstraintViolationProblem;
 
+import jp.co.run.common.constants.MessageConstants;
+import jp.co.run.common.constants.ResponseConstants;
 import jp.co.run.common.utils.HeaderUtil;
 
 /**
@@ -77,47 +79,81 @@ public class ExceptionTranslator implements ProblemHandling {
             entity.getStatusCode());
     }
 
-    @Override
-    public ResponseEntity<Problem> handleRequestMethodNotSupportedException(
-        HttpRequestMethodNotSupportedException exception,
-        NativeWebRequest request) {
-        System.err.println("asdasdadasd");
-        return ProblemHandling.super.handleRequestMethodNotSupportedException(exception,
-            request);
-    }
-
-    @Override
-    public ResponseEntity<Problem> handleNoHandlerFound(
-        NoHandlerFoundException exception, NativeWebRequest request) {
-        System.err.println("asdasdasdasdasd");
-        return ProblemHandling.super.handleNoHandlerFound(exception, request);
-    }
-    
+    /* (non-Javadoc)
+     * @see org.zalando.problem.spring.web.advice.validation.MethodArgumentNotValidAdviceTrait#handleMethodArgumentNotValid(org.springframework.web.bind.MethodArgumentNotValidException, org.springframework.web.context.request.NativeWebRequest)
+     */
     @Override
     public ResponseEntity<Problem> handleMethodArgumentNotValid(
         MethodArgumentNotValidException ex, @Nonnull NativeWebRequest request) {
         BindingResult result = ex.getBindingResult();
         List<FieldErrorVM> fieldErrors = result.getFieldErrors().stream()
-            .map(f -> new FieldErrorVM(f.getField(), f.getCode()))
+            .map(f -> new FieldErrorVM(f.getField(), f.getDefaultMessage()))
             .collect(Collectors.toList());
 
-        Problem problem = Problem.builder()
-            .with("_status", defaultConstraintViolationStatus())
-            .with("_type", "Invalid")
-            .with("_message", ErrorConstants.ERR_VALIDATION)
-            .with("_fieldErrors", fieldErrors).build();
-        return create(ex, problem, request);
+        ProblemBuilder builder = createErrorBody(
+            defaultConstraintViolationStatus(),
+            accessor().getMessage(MessageConstants.PARAMS_INVALID_TYPE_CODE),
+            accessor().getMessage(MessageConstants.PARAMS_INVALID_MSG_CODE));
+
+        builder.with(ResponseConstants.FIELD_ERROR_BODY, fieldErrors);
+
+        return create(ex, builder.build(), request);
     }
 
+    /* (non-Javadoc)
+     * @see org.zalando.problem.spring.web.advice.http.MethodNotAllowedAdviceTrait#handleRequestMethodNotSupportedException(org.springframework.web.HttpRequestMethodNotSupportedException, org.springframework.web.context.request.NativeWebRequest)
+     */
+    @Override
+    public ResponseEntity<Problem> handleRequestMethodNotSupportedException(
+        HttpRequestMethodNotSupportedException ex,
+        @Nonnull NativeWebRequest request) {
+
+        ProblemBuilder builder = createErrorBody(Status.METHOD_NOT_ALLOWED,
+            accessor()
+                .getMessage(MessageConstants.MOETHOD_NOT_ALLOWED_TYPE_CODE),
+            accessor()
+                .getMessage(MessageConstants.METHOD_NOT_ALLOWED_MSG_CODE));
+
+        return create(ex, builder.build(), request);
+    }
+
+    /* (non-Javadoc)
+     * @see org.zalando.problem.spring.web.advice.security.AuthenticationAdviceTrait#handleAuthentication(org.springframework.security.core.AuthenticationException, org.springframework.web.context.request.NativeWebRequest)
+     */
+    @Override
+    public ResponseEntity<Problem> handleAuthentication(
+        AuthenticationException ex, NativeWebRequest request) {
+
+        ProblemBuilder builder = createErrorBody(Status.UNAUTHORIZED,
+            "Bad credentials",
+            "Invalid username or password");
+
+        return create(ex, builder.build(), request);
+    }
+
+    /**
+     * Handle no such element exception.
+     *
+     * @param ex the ex
+     * @param request the request
+     * @return the response entity
+     */
     @ExceptionHandler
     public ResponseEntity<Problem> handleNoSuchElementException(
         NoSuchElementException ex, NativeWebRequest request) {
-        Problem problem = Problem.builder()
-            // .withStatus(Status.NOT_FOUND)
-            .with("message", ErrorConstants.ENTITY_NOT_FOUND_TYPE).build();
-        return create(ex, problem, request);
+        ProblemBuilder builder = createErrorBody(Status.NOT_FOUND,
+            accessor().getMessage(MessageConstants.NOT_FOUND_TYPE_CODE),
+            accessor().getMessage(MessageConstants.NOT_FOUND_MSG_CODE));
+        return create(ex, builder.build(), request);
     }
 
+    /**
+     * Handle bad request alert exception.
+     *
+     * @param ex the ex
+     * @param request the request
+     * @return the response entity
+     */
     @ExceptionHandler
     public ResponseEntity<Problem> handleBadRequestAlertException(
         BadRequestAlertException ex, NativeWebRequest request) {
@@ -125,6 +161,13 @@ public class ExceptionTranslator implements ProblemHandling {
             ex.getEntityName(), ex.getErrorKey(), ex.getMessage()));
     }
 
+    /**
+     * Handle concurrency failure.
+     *
+     * @param ex the ex
+     * @param request the request
+     * @return the response entity
+     */
     @ExceptionHandler
     public ResponseEntity<Problem> handleConcurrencyFailure(
         ConcurrencyFailureException ex, NativeWebRequest request) {
@@ -133,8 +176,46 @@ public class ExceptionTranslator implements ProblemHandling {
         return create(ex, problem, request);
     }
 
-    @SuppressWarnings("unused")
+    /**
+     * Handle internal server error exception.
+     *
+     * @param ex the internal server exception
+     * @param request the request
+     * @return the response entity
+     */
+    @ExceptionHandler
+    public ResponseEntity<Problem> handleInternalServerErrorException(
+        InternalServerErrorException ex, @Nonnull NativeWebRequest request) {
+
+        ProblemBuilder builder = createErrorBody(Status.INTERNAL_SERVER_ERROR,
+            accessor().getMessage(MessageConstants.INTERNAL_ERROR_TYPE_CODE),
+            accessor().getMessage(MessageConstants.INTERNAL_ERROR_MSG_CODE));
+
+        return create(ex, builder.build(), request);
+    }
+
+    /**
+     * Accessor.
+     *
+     * @return the message source accessor
+     */
     private MessageSourceAccessor accessor() {
         return new MessageSourceAccessor(messageSource);
+    }
+
+    /**
+     * Creates the error body.
+     *
+     * @param status the status
+     * @param type the type
+     * @param message the message
+     * @return the problem builder
+     */
+    private ProblemBuilder createErrorBody(Object status, Object type,
+        Object message) {
+        return Problem.builder()
+            .with(ResponseConstants.STATUS_BODY, status)
+            .with(ResponseConstants.TYPE_BODY, type)
+            .with(ResponseConstants.MESSAGE_BODY, message);
     }
 }
