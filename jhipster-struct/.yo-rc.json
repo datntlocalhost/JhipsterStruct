@@ -1,0 +1,35 @@
+{
+  "generator-jhipster": {
+    "promptValues": {
+      "packageName": "jp.co.run",
+      "nativeLanguage": "ja"
+    },
+    "jhipsterVersion": "5.4.0",
+    "applicationType": "monolith",
+    "baseName": "jhipster",
+    "packageName": "jp.co.run",
+    "packageFolder": "jp/co/run",
+    "serverPort": "8080",
+    "authenticationType": "jwt",
+    "cacheProvider": "no",
+    "websocket": false,
+    "databaseType": "sql",
+    "devDatabaseType": "mysql",
+    "prodDatabaseType": "mysql",
+    "searchEngine": false,
+    "messageBroker": false,
+    "serviceDiscoveryType": false,
+    "buildTool": "maven",
+    "enableSwaggerCodegen": false,
+    "jwtSecretKey": "NzRhY2JjNWQ0N2Y3MWFlYzgzMjM5ODg2MzUwMzFiZDgxYjVjZTBiNjRkYmQ2ZDM2OWVmOTA1ZDg5NDUwMGQ2YTUzOTJjOTI3YWViZjU0MDBmM2FmNzA5MWIzMWVjMGMwNzI1Y2JkMTgzMTgxYTBkN2Q4MTFjMTdkNWVlNzRjNDY=",
+    "enableTranslation": true,
+    "languages": [
+      "ja"
+    ],
+    "testFrameworks": [],
+    "jhiPrefix": "jhi",
+    "clientPackageManager": "npm",
+    "nativeLanguage": "ja",
+    "skipClient": true
+  }
+}
