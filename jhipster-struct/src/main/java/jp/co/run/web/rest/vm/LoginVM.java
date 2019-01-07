@@ -1,18 +1,20 @@
 package jp.co.run.web.rest.vm;
 
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+
+import jp.co.run.common.constants.MessageConstants;
+import jp.co.run.common.validations.annotation.Require;
 
 /**
  * View Model object for storing a user's credentials.
  */
 public class LoginVM {
 
-    @NotNull
+    @Require(message = MessageConstants.NOT_NULL_MSG)
     @Size(min = 1, max = 50)
     private String username;
 
-    @NotNull
+    @Require(message = MessageConstants.NOT_NULL_MSG)
     private String password;
 
     private Boolean rememberMe;

@@ -1,15 +1,15 @@
 package jp.co.run.repository;
 
-import jp.co.run.domain.User;
+import java.util.Optional;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import java.util.List;
-import java.util.Optional;
-import java.time.Instant;
+
+import jp.co.run.domain.User;
+import jp.co.run.service.dto.UserSubDto;
 
 /**
  * Spring Data JPA repository for the User entity.
@@ -17,24 +17,12 @@ import java.time.Instant;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    Optional<User> findOneByActivationKey(String activationKey);
-
-    List<User> findAllByActivatedIsFalseAndCreatedDateBefore(Instant dateTime);
-
-    Optional<User> findOneByResetKey(String resetKey);
-
-    Optional<User> findOneByEmailIgnoreCase(String email);
-
-    Optional<User> findOneByLogin(String login);
-
-    @EntityGraph(attributePaths = "authorities")
-    Optional<User> findOneWithAuthoritiesById(Long id);
-
     @EntityGraph(attributePaths = "authorities")
     Optional<User> findOneWithAuthoritiesByLogin(String login);
 
     @EntityGraph(attributePaths = "authorities")
     Optional<User> findOneWithAuthoritiesByEmail(String email);
 
-    Page<User> findAllByLoginNot(Pageable pageable, String login);
+    @Query(name = "findOneByUsername", nativeQuery = true)
+    Optional<UserSubDto> findOneByUsername(@Param("login") String login);
 }

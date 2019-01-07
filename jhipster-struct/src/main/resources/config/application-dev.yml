@@ -23,7 +23,7 @@ spring:
     profiles:
         active: dev
         include:
-            - no-liquibase
+            #- no-liquibase
             # Uncomment to activate TLS for the dev profile
             #- tls
     devtools:
@@ -36,8 +36,8 @@ spring:
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
         url: jdbc:mysql://localhost:3306/jhipster?useUnicode=true&characterEncoding=utf8&useSSL=false
-        username: root
-        password:
+        username: datnt
+        password: datnt
         hikari:
             auto-commit: false
             data-source-properties:
@@ -55,6 +55,8 @@ spring:
             hibernate.cache.use_second_level_cache: false
             hibernate.cache.use_query_cache: false
             hibernate.generate_statistics: true
+        mapping-resources:
+            sql/user-sql.xml
     liquibase:
         contexts: dev
     mail:

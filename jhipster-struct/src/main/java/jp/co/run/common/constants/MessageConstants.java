@@ -36,16 +36,18 @@ public final class MessageConstants {
     
     /** The Constant UNAUTHORIZED_MSG_CODE. */
     public static final String UNAUTHORIZED_MSG_CODE            = "E_MSG_005";
-    
+
     /** The Constant NOT_FOUND_MSG_CODE. */
     public static final String NOT_FOUND_MSG_CODE               = "E_MSG_006";
-    
+
     /** The Constant METHOD_NOT_ALLOWED_MSG_CODE. */
     public static final String METHOD_NOT_ALLOWED_MSG_CODE      = "E_MSG_007";
-    
+
     /** The Constant INTERNAL_ERROR_MSG_CODE. */
     public static final String INTERNAL_ERROR_MSG_CODE          = "E_MSG_008";
-    
+
     /** The Constant _MSG_CODE. */
     public static final String _MSG_CODE = "";
+
+    public static final String NOT_NULL_MSG = "{MSG_001}";
 }

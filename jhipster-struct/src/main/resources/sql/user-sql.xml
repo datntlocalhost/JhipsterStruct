@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<entity-mappings version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence/orm"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence/orm http://xmlns.jcp.org/xml/ns/persistence/orm_2_1.xsd">
+
+    <named-native-query name="findOneByUsername" result-set-mapping="userSetMapping">
+        <query>
+            SELECT  u.login AS login,
+                    u.email AS email
+            FROM    user u
+            WHERE   u.login = :login
+        </query>
+    </named-native-query>
+
+    <sql-result-set-mapping name="userSetMapping">
+        <constructor-result target-class="jp.co.run.service.dto.UserSubDto">
+            <column name="login"/>
+            <column name="email"/>
+        </constructor-result>
+    </sql-result-set-mapping>
+</entity-mappings>
